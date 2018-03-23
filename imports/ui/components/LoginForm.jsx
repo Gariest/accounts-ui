@@ -1023,13 +1023,89 @@ LoginForm.defaultProps = {
 };
 
 Accounts.ui.LoginForm = LoginForm;
+class NewLogin extends Accounts.ui.LoginForm {
+	handleChange(field, evt) {
+		console.log( field );
+		if(field == 'birthday'){
+    this.setState({ [field]: evt });
+    this.setDefaultFieldValues({ [field]: evt });
+			
+		} else {
+    let value = evt.target.value;
+    switch (field) {
+      case 'password': break;
+      default:
+        value = value.trim();
+        break;
+    }
+    this.setState({ [field]: value });
+    this.setDefaultFieldValues({ [field]: value });
+		}
+  }
+  fields() {
+    const { formState } = this.state;
+	console.log(formState);
+    if (formState == STATES.SIGN_UP) {
+      return {
+        firstName: {
+          id: 'firstname',
+          label: 'Firstname',
+		  required : true,
+          onChange: this.handleChange.bind(this, 'firstName')
+        },
+		lastName: {
+          id: 'lastName',
+          label: 'Lastname',
+		  required : true,
+          onChange: this.handleChange.bind(this, 'lastName')
+        },
+		birthday: {
+          id: 'birthday',
+          label: 'Birthday',
+		  required : false,
+          onChange: this.handleChange.bind(this, 'birthday')
+        },
+		telephone: {
+          id: 'telephone',
+          label: 'Your phone',
+		  required : false,
+          onChange: this.handleChange.bind(this, 'telephone')
+        },
+		
+        ...super.fields()
+      };
+    }
+    return super.fields();
+  }
 
+
+  signUp(options = {}) {
+    const { firstName, lastName, telephone = '',birthday } = this.state;
+	
+	let birthday_u = '';
+	if(birthday !== undefined && birthday._d !== undefined){
+		console.log('hurea');
+		birthday_u = birthday._d;
+	} 
+	//console.log(birthday);
+    if ( firstName !== null && lastName !== null ) {
+      options = Object.assign(options || {}, {
+        firstName: firstName,
+		lastName : lastName,
+		phone : telephone,
+		birthday : birthday_u
+      });
+    }
+    super.signUp(options);
+	console.log(options);
+  }
+}
 const LoginFormContainer = withTracker(() => {
   // Listen for the user to login/logout and the services list to the user.
   Meteor.subscribe('servicesList');
   return ({
     user: Accounts.user(),
   });
-}, LoginForm);
+})(NewLogin);
 Accounts.ui.LoginForm = LoginFormContainer;
 export default LoginFormContainer
